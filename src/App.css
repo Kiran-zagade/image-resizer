@@ -1,81 +1,92 @@
-.main-container {
+/* Main Layout */
+.container {
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background-color: #f4f7f6;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f0f2f5;
+  font-family: Arial, sans-serif;
+  padding: 20px;
 }
 
-.resizer-card {
-  background: white;
-  padding: 2rem;
-  border-radius: 15px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-  width: 90%;
-  max-width: 600px;
+.card {
+  background-color: white;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  width: 100%;
+  max-width: 500px;
   text-align: center;
 }
 
+.subtitle {
+  color: #666;
+  font-size: 14px;
+}
+
+/* Form Elements */
 .file-input {
   margin: 20px 0;
   display: block;
   width: 100%;
 }
 
-.upload-btn {
-  background-color: #4A90E2;
+.resize-btn {
+  width: 100%;
+  padding: 12px;
+  background-color: #007bff;
   color: white;
   border: none;
-  padding: 12px 24px;
-  border-radius: 8px;
-  font-weight: bold;
+  border-radius: 6px;
   cursor: pointer;
-  width: 100%;
+  font-weight: bold;
 }
 
-.upload-btn:disabled {
+.resize-btn:disabled {
   background-color: #ccc;
+  cursor: not-allowed;
 }
 
-/* Progress Bar Styles */
-.progress-section {
+/* Progress Bar */
+.progress-container {
+  height: 10px;
+  background-color: #eee;
+  border-radius: 5px;
   margin-top: 20px;
-}
-
-.progress-bar-container {
-  background-color: #e0e0e0;
-  border-radius: 10px;
-  height: 12px;
-  width: 100%;
   overflow: hidden;
 }
 
-.progress-bar-fill {
-  background-color: #4caf50;
+.progress-fill {
   height: 100%;
-  transition: width 0.3s ease-in-out;
+  background-color: #28a745;
+  transition: width 0.3s ease;
 }
 
-/* Results Grid */
+/* Results Section */
 .results-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  grid-template-columns: 1fr 1fr;
   gap: 15px;
   margin-top: 30px;
 }
 
-.result-card img {
-  width: 100%;
-  border-radius: 8px;
+.image-card {
   border: 1px solid #ddd;
+  padding: 8px;
+  border-radius: 8px;
+  background: #fafafa;
 }
 
-.result-card a {
-  display: block;
-  margin-top: 5px;
+.preview-img {
+  width: 100%;
+  border-radius: 4px;
+}
+
+.download-link {
   font-size: 12px;
-  color: #4A90E2;
+  color: #007bff;
   text-decoration: none;
+  display: block;
+  margin-top: 8px;
   font-weight: bold;
 }

@@ -1,75 +1,86 @@
 import React, { useState } from 'react';
-import './App.css'; // We will put the CSS in this file
+import './App.css'; 
 
 function App() {
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [results, setResults] = useState([]);
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [percent, setPercent] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [progress, setProgress] = useState(0);
 
-  const onSelect = (e) => {
+  const handleFileChange = (e) => {
     setSelectedFiles(Array.from(e.target.files));
-    setResults([]); // Clear previous results
+    setResults([]); 
+    setProgress(0);
   };
 
-  const startResize = async () => {
-    setIsProcessing(true);
-    let tempResults = [];
+  const runBatchResize = async () => {
+    setLoading(true);
+    let finishedImages = [];
 
     for (let i = 0; i < selectedFiles.length; i++) {
-      const data = new FormData();
-      data.append('file', selectedFiles[i]);
-      data.append('width', 500);
-      data.append('height', 500);
+      const formData = new FormData();
+      formData.append('file', selectedFiles[i]);
+      formData.append('width', 600);
+      formData.append('height', 400);
 
       try {
-        const res = await fetch('https://oyyi.xyz/api/image/resize', {
+        const response = await fetch('https://oyyi.xyz/api/image/resize', {
           method: 'POST',
-          body: data
+          body: formData,
         });
-        const blob = await res.blob();
-        tempResults.push({
-          url: URL.createObjectURL(blob),
+
+        const blob = await response.blob();
+        const imageUrl = URL.createObjectURL(blob);
+        
+        finishedImages.push({
+          url: imageUrl,
           name: selectedFiles[i].name
         });
       } catch (err) {
-        console.error("Error with file:", i);
+        console.log("Error processing file index: " + i);
       }
-      
-      // Update progress bar
-      setPercent(Math.round(((i + 1) / selectedFiles.length) * 100));
+
+      // Calculate percentage for progress bar
+      let currentStep = Math.round(((i + 1) / selectedFiles.length) * 100);
+      setProgress(currentStep);
     }
 
-    setResults(tempResults);
-    setIsProcessing(false);
+    setResults(finishedImages);
+    setLoading(false);
   };
 
   return (
-    <div className="main-container">
-      <div className="resizer-card">
-        <h1>Batch Resizer</h1>
-        <p>Select images to resize them to 500x500px</p>
-        
-        <input type="file" multiple onChange={onSelect} className="file-input" />
-        
-        <button onClick={startResize} disabled={isProcessing || selectedFiles.length === 0} className="upload-btn">
-          {isProcessing ? "Processing..." : `Resize ${selectedFiles.length} Images`}
+    <div className="container">
+      <div className="card">
+        <h2>Batch Resizer</h2>
+        <p className="subtitle">Upload multiple images to resize at once</p>
+
+        <input 
+          type="file" 
+          multiple 
+          onChange={handleFileChange} 
+          className="file-input"
+        />
+
+        <button 
+          onClick={runBatchResize} 
+          disabled={loading || selectedFiles.length === 0}
+          className="resize-btn"
+        >
+          {loading ? `Processing (${progress}%)` : `Resize ${selectedFiles.length} Images`}
         </button>
 
-        {isProcessing && (
-          <div className="progress-section">
-            <div className="progress-bar-container">
-              <div className="progress-bar-fill" style={{ width: `${percent}%` }}></div>
-            </div>
-            <p>{percent}% Completed</p>
+        {loading && (
+          <div className="progress-container">
+            <div className="progress-fill" style={{ width: `${progress}%` }}></div>
           </div>
         )}
 
         <div className="results-grid">
-          {results.map((item, index) => (
-            <div key={index} className="result-card">
-              <img src={item.url} alt="resized" />
-              <a href={item.url} download={`resized-${item.name}`}>Download</a>
+          {results.map((img, index) => (
+            <div key={index} className="image-card">
+              <img src={img.url} alt="resized" className="preview-img" />
+              <a href={img.url} download={img.name} className="download-link">Download</a>
             </div>
           ))}
         </div>
