@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
+import './App.css'; // We will put the CSS in this file
 
 function App() {
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [results, setResults] = useState([]);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [currentProgress, setCurrentProgress] = useState(0);
+  const [percent, setPercent] = useState(0);
 
   const onSelect = (e) => {
     setSelectedFiles(Array.from(e.target.files));
+    setResults([]); // Clear previous results
   };
 
   const startResize = async () => {
@@ -15,13 +17,9 @@ function App() {
     let tempResults = [];
 
     for (let i = 0; i < selectedFiles.length; i++) {
-      // Update progress bar
-      let percent = Math.round(((i + 1) / selectedFiles.length) * 100);
-      setCurrentProgress(percent);
-
       const data = new FormData();
       data.append('file', selectedFiles[i]);
-      data.append('width', 500); // Fixed size for simplicity
+      data.append('width', 500);
       data.append('height', 500);
 
       try {
@@ -29,12 +27,17 @@ function App() {
           method: 'POST',
           body: data
         });
-
         const blob = await res.blob();
-        tempResults.push(URL.createObjectURL(blob));
+        tempResults.push({
+          url: URL.createObjectURL(blob),
+          name: selectedFiles[i].name
+        });
       } catch (err) {
-        console.log("Error with file " + i);
+        console.error("Error with file:", i);
       }
+      
+      // Update progress bar
+      setPercent(Math.round(((i + 1) / selectedFiles.length) * 100));
     }
 
     setResults(tempResults);
@@ -42,31 +45,34 @@ function App() {
   };
 
   return (
-    <div style={{ textAlign: 'center', marginTop: '50px', fontFamily: 'Arial' }}>
-      <h1>My Image Resizer</h1>
-      
-      <input type="file" multiple onChange={onSelect} />
-      <br /><br />
+    <div className="main-container">
+      <div className="resizer-card">
+        <h1>Batch Resizer</h1>
+        <p>Select images to resize them to 500x500px</p>
+        
+        <input type="file" multiple onChange={onSelect} className="file-input" />
+        
+        <button onClick={startResize} disabled={isProcessing || selectedFiles.length === 0} className="upload-btn">
+          {isProcessing ? "Processing..." : `Resize ${selectedFiles.length} Images`}
+        </button>
 
-      <button onClick={startResize} disabled={isProcessing}>
-        {isProcessing ? "Resizing..." : "Upload & Resize All"}
-      </button>
-
-      {isProcessing && (
-        <div style={{ marginTop: '20px' }}>
-          <p>Processing: {currentProgress}%</p>
-          <progress value={currentProgress} max="100"></progress>
-        </div>
-      )}
-
-      <div style={{ marginTop: '30px' }}>
-        {results.map((url, index) => (
-          <div key={index} style={{ display: 'inline-block', margin: '10px' }}>
-            <img src={url} width="150" alt="resized" />
-            <br />
-            <a href={url} download={`image-${index}.png`}>Download</a>
+        {isProcessing && (
+          <div className="progress-section">
+            <div className="progress-bar-container">
+              <div className="progress-bar-fill" style={{ width: `${percent}%` }}></div>
+            </div>
+            <p>{percent}% Completed</p>
           </div>
-        ))}
+        )}
+
+        <div className="results-grid">
+          {results.map((item, index) => (
+            <div key={index} className="result-card">
+              <img src={item.url} alt="resized" />
+              <a href={item.url} download={`resized-${item.name}`}>Download</a>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
